@@ -43,7 +43,7 @@ const char* secret_mqtt_password = "hassio_mqtt_password";
 #include <ArduinoJson.h>
 
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
-#include "arduino_secrets.h"
+#include "../include/arduino_secrets.h"
 const char *ssid = SECRET_SSID;     // your network SSID (name)
 const char *password = SECRET_PASS; // your network password
 const char *mqtt_username = secret_mqtt_username;
