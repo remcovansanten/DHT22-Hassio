@@ -217,7 +217,10 @@ void publishData(float temp, float humidity, float heatindex)
   yield();
 }
 
-
+/**
+ * @brief Main loop of the program
+ * 
+ */
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -250,25 +253,6 @@ void loop() {
     // Json
     //------------
     publishData(t, h, hic);
-    
-    //NON Json
-    //------------
-    //client.publish("espOffice/temperature", temperatureTemp);
-    //client.publish("espOffice/humidity", humidityTemp);
-
-    //Serial print
-    //------------
-    // Serial.print("Humidity: ");
-    // Serial.print(h);
-    // Serial.print(" %\t Temperature: ");
-    // Serial.print(t);
-    // Serial.print(" *C ");
-    // Serial.print(f);
-    // Serial.print(" *F\t Heat index: ");
-    // Serial.print(hic);
-    // Serial.println(" *C ");
-    // Serial.print(hif);
-    // Serial.println(" *F");
   }
   //Go to sleep now
 	esp_deep_sleep_start();
