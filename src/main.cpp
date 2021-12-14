@@ -49,6 +49,11 @@ const char *password = SECRET_PASS; // your network password
 const char *mqtt_username = secret_mqtt_username;
 const char *mqtt_password = secret_mqtt_password;
 
+// Deepsleep options
+#define uS_TO_S_FACTOR 1000000  //Conversion factor for micro seconds to seconds
+#define TIME_TO_SLEEP  120        //Time ESP32 will go to sleep (in seconds)
+
+
 // Uncomment one of the lines bellow for whatever DHT sensor type you're using!
 //#define DHTTYPE DHT11   // DHT 11
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
@@ -98,7 +103,7 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-// This functions is executed when some device publishes a message to a topic that your ESP8266 is subscribed to
+// This functions is executed when some device publishes a message to a topic that your ESP32 is subscribed to
 // Change the function below to add logic to your program, so when a device publishes a message to a topic that 
 // your ESP8266 is subscribed you can actually do something
 void callback(String topic, byte* message, unsigned int length) {
@@ -177,6 +182,12 @@ void setup() {
   pinMode(ledGPIO5, OUTPUT);
   
   Serial.begin(115200);
+
+  //Set timer to timer length
+	esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+	Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) +
+	" Seconds");
+
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
@@ -207,32 +218,26 @@ void publishData(float temp, float humidity, float heatindex)
 }
 
 
-// For this project, you don't need to change anything in the loop function. 
-// Basically it ensures that you ESP is connected to your broker
 void loop() {
   if (!client.connected()) {
     reconnect();
   }
   if(!client.loop())
      client.connect("ESPofficeClient");
-    
-  now = millis();
-  // Publishes new temperature and humidity every 10 seconds
-  if (now - lastMeasure > 60000) {
-    lastMeasure = now;
-    // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-    float h = dht.readHumidity();
-    // Read temperature as Celsius (the default)
-    float t = dht.readTemperature();
-    // Read temperature as Fahrenheit (isFahrenheit = true)
-    float f = dht.readTemperature(true);
 
-    // Check if any reads failed and exit early (to try again).
-    if (isnan(h) || isnan(t) || isnan(f)) {
-      Serial.println("Failed to read from DHT sensor!");
-      return;
-    }
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float h = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+  float t = dht.readTemperature();
+  // Read temperature as Fahrenheit (isFahrenheit = true)
+  float f = dht.readTemperature(true);
 
+  // Check if any reads failed and exit early (to try again).
+  if (isnan(h) || isnan(t) || isnan(f)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  else{
     // Computes temperature values in Celsius
     float hic = dht.computeHeatIndex(t, h, false);
     static char temperatureTemp[7];
@@ -245,7 +250,7 @@ void loop() {
     // Json
     //------------
     publishData(t, h, hic);
-   
+    
     //NON Json
     //------------
     //client.publish("espOffice/temperature", temperatureTemp);
@@ -265,4 +270,6 @@ void loop() {
     // Serial.print(hif);
     // Serial.println(" *F");
   }
+  //Go to sleep now
+	esp_deep_sleep_start();
 }

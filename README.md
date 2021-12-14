@@ -4,6 +4,7 @@ Description: Simple program to publish temperature, humidity and heat index to h
 Uses an ESP32 and DHT22 as components and MQTT / JSON for integration
 
 Author: Remco van Santen
+
 License: Public
 ----
 Hassio configuration.yaml snippet:
